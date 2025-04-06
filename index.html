@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Firebase Sign-In</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>Firebase Login</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="signUp()">Sign Up</button>
+    <button onclick="signIn()">Sign In</button>
+    <button onclick="signOut()">Sign Out</button>
+    <p id="message"></p>
+  </div>
+
+  <script>
+    // WARNING: Replace these placeholders with your real Firebase config in development only.
+    // NEVER expose sensitive project credentials in production without proper security rules.
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MSG_SENDER_ID",
+      appId: "YOUR_APP_ID",
+      measurementId: "YOUR_MEASUREMENT_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function signUp() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(() => {
+          document.getElementById("message").innerText = "Sign-up successful!";
+        })
+        .catch(error => {
+          document.getElementById("message").innerText = error.message;
+        });
+    }
+
+    function signIn() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.signInWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          const user = userCredential.user;
+          const newTab = window.open("", "_blank");
+          newTab.document.write(`
+            <html>
+              <head><title>Dashboard</title></head>
+              <body>
+                <h2>Welcome ${user.email}</h2>
+                <!-- Resume Upload Form -->
+                <form action="http://localhost:5000/upload" method="POST" enctype="multipart/form-data">
+                  <input type="file" name="resume" accept=".pdf,.docx" required />
+                  <button type="submit">Upload Resume</button>
+                </form>
+
+                <!-- Add Job Form -->
+                <form action="http://localhost:5000/add-job" method="POST">
+                  <input type="text" name="title" placeholder="Job Title" required />
+                  <textarea name="description" placeholder="Job Description" rows="4" required></textarea>
+                  <input type="text" name="skills" placeholder="Required Skills (comma-separated)" required />
+                  <button type="submit">Post Job</button>
+                </form>
+              </body>
+            </html>
+          `);
+        })
+        .catch(error => {
+          document.getElementById("message").innerText = error.message;
+        });
+    }
+
+    function signOut() {
+      auth.signOut().then(() => {
+        document.getElementById("message").innerText = "Signed out.";
+      });
+    }
+  </script>
+</body>
+</html>
